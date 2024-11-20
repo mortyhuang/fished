@@ -1,0 +1,12 @@
+{
+	"name": "fished",
+	"version": "1.0.1",
+	"type": "module",
+	"bin": {
+		"fished": "./index.js"
+	},
+	"dependencies": {
+		"dayjs": "^1.11.11",
+		"lunar-javascript": "^1.6.12"
+	}
+}

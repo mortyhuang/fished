@@ -1,0 +1,30 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      dayjs:
+        specifier: ^1.11.11
+        version: 1.11.11
+      lunar-javascript:
+        specifier: ^1.6.12
+        version: 1.6.12
+
+packages:
+
+  dayjs@1.11.11:
+    resolution: {integrity: sha512-okzr3f11N6WuqYtZSvm+F776mB41wRZMhKP+hc34YdW+KmtYYK9iqvHSwo2k9FEH3fhGXvOPV6yz2IcSrfRUDg==}
+
+  lunar-javascript@1.6.12:
+    resolution: {integrity: sha512-8BIYt50up4B2ihh0O1MCUh7+y6hDiDRIPp0ubP8KKaA7cIgAi4jD3QvM9OdZj0QNhSvopZPKipLt2Eb9+cLhxw==}
+
+snapshots:
+
+  dayjs@1.11.11: {}
+
+  lunar-javascript@1.6.12: {}
