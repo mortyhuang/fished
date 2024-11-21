@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 import { HolidayUtil, Lunar, Solar, SolarUtil } from "lunar-javascript";
 import { toLunar } from "./toLunar.js";
 
-let holidays;
 async function main() {
   const currentYear = dayjs().year();
   const _holidays = HolidayUtil.getHolidays(currentYear);
@@ -25,15 +24,13 @@ async function main() {
     holidaysMap.set(holiday.getName(), holiday);
   });
 
-  holidays = Array.from(holidaysMap.values());
   toDay();
-  wageTime(1);
-  wageTime(10);
-  wageTime(15);
-  wageTime(20);
-  holidayTime();
+  [1, 10, 15, 20].forEach(wageTime);
+  const holidays = Array.from(holidaysMap.values());
+  holidayTime(holidays);
   lastWorkDayTime();
   restOfTheYear();
+  restOfTheLunarYear();
   taboos();
 }
 
@@ -70,7 +67,7 @@ function wageTime(day) {
   console.log(`距离${origtinDay}(+${day - origtinDay})号发工资还有${diff}天`);
 }
 
-function holidayTime() {
+function holidayTime(holidays) {
   holidays.forEach((holiday) => {
     const date = dayjs(holiday.getDay());
     if (dayjs().isAfter(date)) {
@@ -80,6 +77,7 @@ function holidayTime() {
     const diff = dayjs(holiday.getDay()).diff(dayjs(), "day");
     console.log(`距离[${holiday.getName()}]还有${diff}天`);
   });
+  
 }
 
 function lastWorkDayTime() {
@@ -87,7 +85,7 @@ function lastWorkDayTime() {
   const diff = lastWorkDay.diff(dayjs(), "day");
   if (diff === 0) {
     console.log(`明天是这个月最后一个工作日`);
-    return
+    return;
   }
   console.log(`距离这个月最后一个工作日还有${diff}天`);
 }
@@ -114,6 +112,14 @@ function restOfTheYear() {
   console.log(`今年已经过了${precent}%,还有${diff}天`);
 }
 
+function restOfTheLunarYear() {
+  const lunar = Lunar.fromYmd(2025, 1, 1);
+  const solar = lunar.getSolar();
+  const diff = dayjs(solar.toString()).diff(dayjs(), "day");
+  console.log(`距离农历新年还有${diff}天`);
+
+}
+
 // 忌讳
 function taboos() {
   var d = Lunar.fromDate(new Date());
@@ -137,17 +143,17 @@ function toDay() {
   const week = dayjs().day();
   var solar = Solar.fromDate(new Date());
   const weekMap = {
-    1: 'Mon',
-    2: 'Tue',
-    3: 'What',
-    4: 'The',
-    5: 'Fuck',
-    6: 'Sat',
-    0: 'Sun',
-  }
-  console.log("Mon Tue Wed What The Fuck Sat Sun")
+    1: "Mon",
+    2: "Tue",
+    3: "What",
+    4: "The",
+    5: "Fuck",
+    6: "Sat",
+    0: "Sun",
+  };
+  console.log("Mon Tue What The Fuck Sat Sun");
   console.log("-----");
-  console.log(`今天是${weekMap[week]}`, day);
+  console.log(`${weekMap[week]}`, day);
   console.log("农历", toLunar(solar.toString()));
   console.log("-----");
 
