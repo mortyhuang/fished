@@ -113,11 +113,30 @@ function restOfTheYear() {
 }
 
 function restOfTheLunarYear() {
-  const lunar = Lunar.fromYmd(2025, 1, 1);
-  const solar = lunar.getSolar();
-  const diff = dayjs(solar.toString()).diff(dayjs(), "day");
+  // Get current lunar date to determine the current lunar year
+  const currentLunar = Lunar.fromDate(new Date());
+  const currentLunarYear = currentLunar.getYear();
+  
+  // Calculate this year's lunar new year (正月初一)
+  const thisYearLunarNewYear = Lunar.fromYmd(currentLunarYear, 1, 1);
+  const thisYearSolar = thisYearLunarNewYear.getSolar();
+  
+  // Check if current date is after this year's lunar new year
+  const today = dayjs();
+  const thisYearNewYearDate = dayjs(thisYearSolar.toString());
+  
+  let nextLunarNewYear;
+  if (today.isAfter(thisYearNewYearDate) || today.isSame(thisYearNewYearDate)) {
+    // If we're past this year's lunar new year, use next year's
+    nextLunarNewYear = Lunar.fromYmd(currentLunarYear + 1, 1, 1);
+  } else {
+    // If we're before this year's lunar new year, use this year's
+    nextLunarNewYear = thisYearLunarNewYear;
+  }
+  
+  const nextSolar = nextLunarNewYear.getSolar();
+  const diff = dayjs(nextSolar.toString()).diff(today, "day");
   console.log(`距离农历新年还有${diff}天`);
-
 }
 
 // 忌讳
