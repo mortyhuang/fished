@@ -5,6 +5,10 @@
 	"bin": {
 		"fished": "./src/index.js"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mortyhuang/fished"
+	},
 	"dependencies": {
 		"dayjs": "^1.11.11",
 		"lunar-javascript": "^1.6.12"
