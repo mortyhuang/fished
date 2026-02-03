@@ -66,13 +66,5 @@ jobs:
           VERSION="${TAG#v}"
           npm version --no-git-tag-version "$VERSION"
 
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "chore: release $GITHUB_REF_NAME" || exit 0
-          git push origin ${{ github.event.release.target_commitish }}
-
       - name: Publish
         run: npm publish --provenance
