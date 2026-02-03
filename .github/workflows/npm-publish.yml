@@ -1,0 +1,66 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    if: ${{ github.event.release.target_commitish == 'main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Ensure npm supports OIDC
+        run: npm i -g npm@11.5.1
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test --if-present
+
+      - name: Update release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          TARGET="${{ github.event.release.target_commitish }}"
+          NOTES=$(gh api -X POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" -f tag_name="$TAG" -f target_commitish="$TARGET")
+          BODY=$(echo "$NOTES" | jq -r '.body')
+          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/releases/${{ github.event.release.id }}" -f body="$BODY"
+
+      - name: Sync version with release tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          npm version --no-git-tag-version "$VERSION"
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore: release $GITHUB_REF_NAME" || exit 0
+          git push
+
+      - name: Ensure git tag exists
+        run: |
+          git rev-parse "$GITHUB_REF_NAME" >/dev/null 2>&1 || git tag "$GITHUB_REF_NAME"
+          git push --tags
+
+      - name: Publish
+        run: npm publish

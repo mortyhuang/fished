@@ -113,29 +113,25 @@ function restOfTheYear() {
 }
 
 function restOfTheLunarYear() {
-  // Get current lunar date to determine the current lunar year
-  const currentLunar = Lunar.fromDate(new Date());
-  const currentLunarYear = currentLunar.getYear();
-  
-  // Calculate this year's lunar new year (正月初一)
-  const thisYearLunarNewYear = Lunar.fromYmd(currentLunarYear, 1, 1);
+  const today = dayjs().startOf("day");
+  const solarYear = today.year();
+
+  // Lunar new year (正月初一) for the current solar year
+  const thisYearLunarNewYear = Lunar.fromYmd(solarYear, 1, 1);
   const thisYearSolar = thisYearLunarNewYear.getSolar();
-  
-  // Check if current date is after this year's lunar new year
-  const today = dayjs();
-  const thisYearNewYearDate = dayjs(thisYearSolar.toString());
-  
+  const thisYearNewYearDate = dayjs(thisYearSolar.toString()).startOf("day");
+
   let nextLunarNewYear;
   if (today.isAfter(thisYearNewYearDate) || today.isSame(thisYearNewYearDate)) {
     // If we're past this year's lunar new year, use next year's
-    nextLunarNewYear = Lunar.fromYmd(currentLunarYear + 1, 1, 1);
+    nextLunarNewYear = Lunar.fromYmd(solarYear + 1, 1, 1);
   } else {
     // If we're before this year's lunar new year, use this year's
     nextLunarNewYear = thisYearLunarNewYear;
   }
-  
+
   const nextSolar = nextLunarNewYear.getSolar();
-  const diff = dayjs(nextSolar.toString()).diff(today, "day");
+  const diff = dayjs(nextSolar.toString()).startOf("day").diff(today, "day");
   console.log(`距离农历新年还有${diff}天`);
 }
 
