@@ -34,18 +34,35 @@ jobs:
         run: npm test --if-present
 
       - name: Update release notes
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          TARGET="${{ github.event.release.target_commitish }}"
-          NOTES=$(gh api -X POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" -f tag_name="$TAG" -f target_commitish="$TARGET")
-          BODY=$(echo "$NOTES" | jq -r '.body')
-          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/releases/${{ github.event.release.id }}" -f body="$BODY"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            const target = context.payload.release.target_commitish;
+            if (context.payload.release.body && context.payload.release.body.trim().length > 0) {
+              core.info('Release body already set. Skipping auto-generated notes.');
+              return;
+            }
+            const notes = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              target_commitish: target,
+            });
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              body: notes.data.body,
+            });
 
       - name: Sync version with release tag
         run: |
           TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" != v* ]]; then
+            echo "Release tag must start with 'v' (e.g. v1.2.3). Got: $TAG"
+            exit 1
+          fi
           VERSION="${TAG#v}"
           npm version --no-git-tag-version "$VERSION"
 
@@ -53,15 +70,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout ${{ github.event.release.target_commitish }}
           git add package.json package-lock.json
           git commit -m "chore: release $GITHUB_REF_NAME" || exit 0
           git push origin ${{ github.event.release.target_commitish }}
 
-      - name: Ensure git tag exists
-        run: |
-          git rev-parse "$GITHUB_REF_NAME" >/dev/null 2>&1 || git tag "$GITHUB_REF_NAME"
-          git push --tags
-
       - name: Publish
-        run: npm publish
+        run: npm publish --provenance
