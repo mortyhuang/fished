@@ -1,8 +1,9 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -10,7 +11,6 @@ permissions:
 
 jobs:
   publish:
-    if: ${{ github.event.release.target_commitish == 'main' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
