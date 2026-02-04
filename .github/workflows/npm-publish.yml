@@ -35,15 +35,5 @@ jobs:
       - name: Test
         run: pnpm test --if-present
 
-      - name: Sync version with release tag
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" != v* ]]; then
-            echo "Release tag must start with 'v' (e.g. v1.2.3). Got: $TAG"
-            exit 1
-          fi
-          VERSION="${TAG#v}"
-          npm version --no-git-tag-version "$VERSION"
-
       - name: Publish
-        run: pnpm publish --provenance
+        run: pnpm publish --provenance --no-git-checks
