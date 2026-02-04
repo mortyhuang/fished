@@ -9,8 +9,8 @@
     "update-holidays": "node scripts/update-holidays.js",
     "build": "rolldown -c",
     "run": "node ./dist/index.js",
-    "prepare-tag": "node scripts/prepare-tag.js",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "postinstall": "node ./scripts/update-holidays.js"
   },
   "repository": {
     "type": "git",
