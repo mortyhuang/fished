@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup pnpm
@@ -36,4 +36,4 @@ jobs:
         run: pnpm test --if-present
 
       - name: Publish
-        run: pnpm publish --provenance --no-git-checks
+        run: npm publish --provenance
