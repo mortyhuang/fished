@@ -24,14 +24,16 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
-      - name: Ensure npm supports OIDC
-        run: npm i -g npm@11.5.1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Test
-        run: npm test --if-present
+        run: pnpm test --if-present
 
       - name: Sync version with release tag
         run: |
@@ -44,4 +46,4 @@ jobs:
           npm version --no-git-tag-version "$VERSION"
 
       - name: Publish
-        run: npm publish --provenance
+        run: pnpm publish --provenance

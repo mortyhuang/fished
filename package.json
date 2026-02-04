@@ -1,16 +1,30 @@
 {
-	"name": "fished",
-	"version": "1.0.3",
-	"type": "module",
-	"bin": {
-		"fished": "./src/index.js"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/mortyhuang/fished"
-	},
-	"dependencies": {
-		"dayjs": "^1.11.11",
-		"lunar-javascript": "^1.6.12"
-	}
+  "name": "fished",
+  "version": "1.0.3",
+  "type": "module",
+  "bin": {
+    "fished": "./dist/index.js"
+  },
+  "scripts": {
+    "update-holidays": "node scripts/update-holidays.js",
+    "build": "rolldown -c",
+    "run": "node ./dist/index.js",
+    "prepublishOnly": "pnpm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mortyhuang/fished"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.11",
+    "ink": "^5.0.1",
+    "lunar-javascript": "^1.6.12",
+    "react": "^18.3.1"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "rolldown": "^1.0.0-rc.2"
+  }
 }
