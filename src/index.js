@@ -1,10 +1,10 @@
-import React from "react";
+import { createElement } from "react";
 import { render, Box, Text } from "ink";
 import dayjs from "dayjs";
 import { HolidayUtil, SolarUtil } from "lunar-javascript";
 import holidayApi from "../data/holidayAPI.json" with { type: "json" };
 
-const h = React.createElement;
+const h = createElement;
 // xterm-256 palette inspired hex values (soft, cool)
 const weekdayColor = "#AF87FF";
 const weekendColor = "#E4E4E4";
