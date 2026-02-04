@@ -1,6 +1,6 @@
 {
   "name": "fished",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "type": "module",
   "bin": {
     "fished": "./dist/index.js"
@@ -9,7 +9,6 @@
     "update-holidays": "node scripts/update-holidays.js",
     "build": "rolldown -c",
     "run": "node ./dist/index.js",
-    "prepublishOnly": "pnpm run build",
     "postinstall": "node ./scripts/update-holidays.js"
   },
   "repository": {

@@ -35,5 +35,11 @@ jobs:
       - name: Test
         run: pnpm test --if-present
 
+      - name: Build
+        run: pnpm run build
+
+      - name: Chmod
+        run: chmod +x dist/index.js
+
       - name: Publish
         run: npm publish --provenance
