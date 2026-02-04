@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup pnpm
@@ -35,15 +35,11 @@ jobs:
       - name: Test
         run: pnpm test --if-present
 
-      - name: Sync version with release tag
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" != v* ]]; then
-            echo "Release tag must start with 'v' (e.g. v1.2.3). Got: $TAG"
-            exit 1
-          fi
-          VERSION="${TAG#v}"
-          npm version --no-git-tag-version "$VERSION"
+      - name: Build
+        run: pnpm run build
+
+      - name: Chmod
+        run: chmod +x dist/index.js
 
       - name: Publish
-        run: pnpm publish --provenance
+        run: npm publish --provenance
