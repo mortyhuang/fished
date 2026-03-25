@@ -14,15 +14,17 @@ on:
           - major
   push:
     tags:
-      - "*"
+      - "v*.*.*"
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
-  prepare:
+  bump:
     if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +59,7 @@ jobs:
         run: |
           git add package.json pnpm-lock.yaml
           git commit -m "chore(release): ${{ steps.version.outputs.version }}"
-          git tag -a "${{ steps.version.outputs.version }}" -m "chore(release): ${{ steps.version.outputs.version }}"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "chore(release): v${{ steps.version.outputs.version }}"
 
       - name: Push commit and tag
         run: git push --follow-tags origin main
@@ -76,7 +78,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
@@ -86,7 +88,7 @@ jobs:
         run: pnpm build
 
       - name: Publish to npm
-        run: pnpm publish --provenance --no-git-checks
+        run: npm publish --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
