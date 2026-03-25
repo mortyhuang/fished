@@ -46,7 +46,7 @@ jobs:
         id: version
         run: |
           npm version ${{ inputs.type }} -m "chore(release): %s"
-          echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+          echo "version=$(node -p 'require("./package.json").version')" >> $GITHUB_OUTPUT
 
       - name: Build
         run: pnpm build
