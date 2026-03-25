@@ -1,92 +1,30 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "*.*.*"
   workflow_dispatch:
     inputs:
-      stage:
-        description: "发布阶段"
-        required: true
-        default: "prepare"
-        type: choice
-        options:
-          - prepare
-          - publish
       type:
-        description: "prepare 阶段的版本类型"
-        required: false
+        description: "版本类型"
+        required: true
         default: "patch"
         type: choice
         options:
           - patch
           - minor
           - major
-      tag:
-        description: "publish 阶段的 tag（例如 1.2.3）"
-        required: false
-        type: string
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
-  prepare:
-    if: github.event_name == 'workflow_dispatch' && inputs.stage == 'prepare'
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Bump version and create tag
-        run: |
-          npm version ${{ inputs.type }} --no-git-tag-version
-          VERSION=$(node -p 'require("./package.json").version')
-          git add package.json pnpm-lock.yaml
-          git commit -m "chore(release): ${VERSION}"
-          git tag -a "${VERSION}" -m "chore(release): ${VERSION}"
-
-      - name: Push commit and tag
-        run: git push --follow-tags origin main
-
-  publish:
-    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.stage == 'publish')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate publish tag input
-        if: github.event_name == 'workflow_dispatch' && inputs.stage == 'publish'
-        run: |
-          if [ -z "${{ inputs.tag }}" ]; then
-            echo "::error::stage=publish 时必须提供 tag，例如 1.2.3"
-            exit 1
-          fi
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.stage == 'publish' && inputs.tag || github.ref }}
-
-      - name: Resolve release tag
-        id: meta
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.stage }}" = "publish" ]; then
-            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
-          fi
 
       - uses: pnpm/action-setup@v4
         with:
@@ -97,7 +35,31 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
-      - run: pnpm install --frozen-lockfile
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        run: npm version ${{ inputs.type }} --no-git-tag-version
+
+      - name: Get new version
+        id: version
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Commit and tag
+        run: |
+          git add package.json pnpm-lock.yaml
+          git commit -m "chore(release): ${{ steps.version.outputs.version }}"
+          git tag -a "${{ steps.version.outputs.version }}" -m "chore(release): ${{ steps.version.outputs.version }}"
+
+      - name: Push commit and tag
+        run: git push --follow-tags origin main
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
@@ -110,6 +72,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.meta.outputs.tag }}
-          name: Release ${{ steps.meta.outputs.tag }}
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
           generate_release_notes: true
