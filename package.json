@@ -22,7 +22,8 @@
     "react": "^18.3.1"
   },
   "files": [
-    "dist"
+    "dist",
+    "data"
   ],
   "devDependencies": {
     "rolldown": "^1.0.0-rc.11"
