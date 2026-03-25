@@ -9,6 +9,7 @@ export default defineConfig({
     entryFileNames: "index.js",
     format: "esm",
     banner: "#!/usr/bin/env node",
+    minify: true,
   },
   outputOptions: {
     codeSplitting: false,
