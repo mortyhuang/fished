@@ -5,15 +5,15 @@ import { HolidayUtil, SolarUtil } from "lunar-javascript";
 import holidayApi from "../data/holidayAPI.json" with { type: "json" };
 
 const h = createElement;
-// xterm-256 palette inspired hex values (soft, cool)
-const weekdayColor = "#AF87FF";
-const weekendColor = "#E4E4E4";
-const sectionColor = "#5FAFD7";
-const holidayFgColor = "#D78787";
-const holidayBgColor = "#FFD7D7";
-const compFgColor = "#87AFD7";
-const compBgColor = "#AFD7FF";
-const todayBgColor = "#D7D7FF";
+// Ink standard colors (auto-adapts to terminal theme)
+const colors = {
+  weekday: "magenta",
+  weekend: undefined,
+  section: "cyan",
+  holiday: "red",
+  comp: "blue",
+  todayBg: "magentaBright",
+};
 const BAR_WIDTH = 8;
 const YEAR_BAR_WIDTH = 20;
 
@@ -85,7 +85,7 @@ function Section({ title, children }) {
   return h(
     Box,
     { flexDirection: "column", gap: 0 },
-    h(Text, { color: sectionColor, bold: true }, title),
+    h(Text, { color: colors.section, bold: true }, title),
     children
   );
 }
@@ -132,7 +132,7 @@ function Calendar({ holidays }) {
         Text,
         {
           key: label,
-          color: idx === 0 || idx === 6 ? weekendColor : weekdayColor,
+          color: idx === 0 || idx === 6 ? colors.weekend : colors.weekday,
           bold: true,
         },
         label + (idx < head.length - 1 ? " " : "")
@@ -150,7 +150,7 @@ function Calendar({ holidays }) {
           {
             key: `${rowIndex}-${idx}`,
             color: getCalendarTextColor(cell),
-            backgroundColor: cell.isToday ? todayBgColor : undefined,
+            backgroundColor: cell.isToday ? colors.todayBg : undefined,
             bold: cell.isToday || cell.isHoliday || cell.isComp,
             underline: false,
           },
@@ -165,7 +165,7 @@ function Calendar({ holidays }) {
     { flexDirection: "column", gap: 0 },
     h(
       Text,
-      { color: sectionColor, bold: true },
+      { color: colors.section, bold: true },
       `Calendar ${today.format("YYYY-MM")}`
     ),
     header,
@@ -179,22 +179,22 @@ function YearProgress({ info }) {
   return h(
     Box,
     { flexDirection: "column", gap: 0 },
-    h(Text, { color: sectionColor, bold: true }, "Year Progress"),
+    h(Text, { color: colors.section, bold: true }, "Year Progress"),
     h(
       Text,
       null,
       h(ProgressBar, {
         ratio: displayRatio,
         width: info.barWidth,
-        color: weekdayColor,
-        emptyColor: weekendColor,
+        color: colors.weekday,
+        emptyColor: colors.weekend,
         filledChar: "█",
       }),
       h(Text, null, ` ${displayPercent}%`)
     ),
     h(
       Text,
-      { color: weekendColor },
+      { color: colors.weekend },
       `已过 ${info.passed} 天 · 剩余 ${info.remaining} 天`
     )
   );
@@ -225,16 +225,9 @@ function getHolidayMarks(holidays, year, month) {
 
 function getCalendarTextColor(cell) {
   if (!cell || !cell.text || !cell.text.trim()) return undefined;
-  if (cell.isComp) return compFgColor;
-  if (cell.isHoliday) return holidayFgColor;
-  return cell.isWeekend ? weekendColor : weekdayColor;
-}
-
-function getCalendarBgColor(cell) {
-  if (!cell || !cell.text || !cell.text.trim()) return undefined;
-  if (cell.isComp) return compBgColor;
-  if (cell.isHoliday) return holidayBgColor;
-  return undefined;
+  if (cell.isComp) return colors.comp;
+  if (cell.isHoliday) return colors.holiday;
+  return cell.isWeekend ? colors.weekend : colors.weekday;
 }
 
 function parseDaysLeft(info) {
@@ -254,8 +247,8 @@ function WageCards({ rows, maxWidth, labelWidth }) {
   const cards = rows.map(([label, info], idx) => {
     const days = parseDaysLeft(info);
     const ratio = days === null ? 0 : Math.max(0, Math.min(1, 1 - days / maxDays));
-    const barColor = gradientColor(idx, rows.length);
-    const barEmptyColor = weekendColor;
+    const barColor = colors.weekday;
+    const barEmptyColor = colors.weekend;
     const left = padRightVisual(label, labelWidth);
 
     return h(
@@ -270,7 +263,7 @@ function WageCards({ rows, maxWidth, labelWidth }) {
         emptyColor: barEmptyColor,
         filledChar: "━",
       }),
-      h(Text, { color: weekendColor }, ` ${info}`)
+      h(Text, { color: colors.weekend }, ` ${info}`)
     );
   });
 
@@ -291,7 +284,7 @@ function HolidayCards({ rows, maxWidth, labelWidth }) {
     } else if (row.status === "upcoming") {
       ratio = Math.max(0, Math.min(1, 1 - days / maxDays));
     }
-    const barColor = gradientColor(idx, rows.length);
+    const barColor = colors.weekday;
     const left = padRightVisual(row.label, labelWidth);
 
     return h(
@@ -303,105 +296,14 @@ function HolidayCards({ rows, maxWidth, labelWidth }) {
         ratio,
         width: barWidth,
         color: barColor,
-        emptyColor: weekendColor,
+        emptyColor: colors.weekend,
         filledChar: "━",
       }),
-      h(Text, { color: weekendColor }, ` ${row.info}`)
+      h(Text, { color: colors.weekend }, ` ${row.info}`)
     );
   });
 
   return h(Box, { flexDirection: "column", gap: 0 }, ...cards);
-}
-
-function gradientColor(index, total) {
-  if (total <= 1) return weekdayColor;
-  const t = index / (total - 1);
-  return mixHex(weekdayColor, weekendColor, t);
-}
-
-function mixHex(a, b, t) {
-  const ca = hexToRgb(a);
-  const cb = hexToRgb(b);
-  const r = Math.round(ca.r + (cb.r - ca.r) * t);
-  const g = Math.round(ca.g + (cb.g - ca.g) * t);
-  const bl = Math.round(ca.b + (cb.b - ca.b) * t);
-  return `#${toHex(r)}${toHex(g)}${toHex(bl)}`;
-}
-
-function hexToRgb(hex) {
-  const h = hex.replace("#", "");
-  return {
-    r: parseInt(h.slice(0, 2), 16),
-    g: parseInt(h.slice(2, 4), 16),
-    b: parseInt(h.slice(4, 6), 16),
-  };
-}
-
-function toHex(n) {
-  return n.toString(16).padStart(2, "0");
-}
-
-function KeyValueTable({ columns, rows, maxWidth }) {
-  const width = Math.max(40, maxWidth || 80);
-  const gap = 2;
-  const firstMax = 18;
-  const firstWidth = Math.min(
-    firstMax,
-    Math.max(columns[0].length, ...rows.map((r) => r[0].length))
-  );
-  const secondWidth = Math.max(10, width - firstWidth - gap);
-
-  const header = formatRow(columns, [firstWidth, secondWidth], gap, true);
-  const body = rows.flatMap((row) =>
-    formatRow(row, [firstWidth, secondWidth], gap, false)
-  );
-
-  return h(
-    Box,
-    { flexDirection: "column", gap: 0 },
-    header,
-    ...body
-  );
-}
-
-function formatRow(row, widths, gap, isHeader) {
-  const [w1, w2] = widths;
-  const left = wrapText(row[0], w1);
-  const right = wrapText(row[1], w2);
-  const lines = Math.max(left.length, right.length);
-  const nodes = [];
-
-  for (let i = 0; i < lines; i++) {
-    const l = padRight(left[i] || "", w1);
-    const r = padRight(right[i] || "", w2);
-    nodes.push(
-      h(
-        Text,
-        { key: `${row[0]}-${i}` },
-        h(Text, { bold: isHeader }, l),
-        " ".repeat(gap),
-        h(Text, { bold: isHeader }, r)
-      )
-    );
-  }
-
-  return nodes;
-}
-
-function wrapText(text, width) {
-  if (!text) return [""];
-  const out = [];
-  let i = 0;
-  while (i < text.length) {
-    out.push(text.slice(i, i + width));
-    i += width;
-  }
-  return out;
-}
-
-function padRight(text, width) {
-  const pad = Math.max(0, width - text.length);
-  return text + " ".repeat(pad);
 }
 
 function ProgressBar({ ratio, width, color, emptyColor, filledChar }) {
