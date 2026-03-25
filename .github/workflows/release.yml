@@ -26,12 +26,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Configure Git
         run: |
@@ -44,11 +48,14 @@ jobs:
           npm version ${{ inputs.type }} -m "chore(release): %s"
           echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
 
+      - name: Build
+        run: pnpm build
+
       - name: Push and tag
         run: git push --follow-tags origin main
 
       - name: Publish to npm
-        run: npm publish --provenance
+        run: pnpm publish --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
