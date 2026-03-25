@@ -24,6 +24,6 @@
     "dist"
   ],
   "devDependencies": {
-    "rolldown": "^1.0.0-rc.2"
+    "rolldown": "^1.0.0-rc.11"
   }
 }
