@@ -7,7 +7,7 @@
   },
   "scripts": {
     "update-holidays": "node scripts/update-holidays.js",
-    "build": "rolldown -c",
+    "build": "npm run update-holidays && rolldown -c",
     "run": "node ./dist/index.js"
   },
   "repository": {
