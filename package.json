@@ -1,6 +1,6 @@
 {
   "name": "fished",
-  "version": "1.1.14",
+  "version": "1.1.15",
   "type": "module",
   "bin": {
     "fished": "dist/index.js"
