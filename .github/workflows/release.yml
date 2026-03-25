@@ -87,6 +87,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Chmod
+        run: chmod +x dist/index.js
+
       - name: Publish to npm
         run: npm publish --provenance
 
