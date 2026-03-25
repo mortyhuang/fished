@@ -84,6 +84,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Update holidays
+        run: pnpm update-holidays
+
       - name: Build
         run: pnpm build
 
